@@ -18,7 +18,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 h1,h2,h3{font-family:var(--fd);line-height:1.08;margin:0}
 a{color:inherit}
 .wrap{max-width:1120px;margin:0 auto;padding:0 20px}
-header{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;background:var(--glass);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;border-bottom:1px solid var(--line)}header::before{content:"";position:absolute;inset:0;z-index:-1;background:var(--glass);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
 nav{display:flex;align-items:center;justify-content:space-between;height:64px;gap:12px}
 .logo{font:800 28px var(--fd);text-decoration:none;letter-spacing:-.5px;display:flex}
 .logo span{display:inline-block;transition:transform .35s cubic-bezier(.3,1.8,.5,1),color .2s}
@@ -302,7 +302,8 @@ async function loadCatalog(){if(!SB)return;try{const {data,error}=await SB.from(
 async function checkEditor(){ADMIN=false;if(SESS&&SB){try{const {data}=await SB.from('editors').select('user_id').eq('user_id',SESS.user.id).maybeSingle();ADMIN=!!data}catch(e){}}renderCur()}
 async function initSB(){
 if(!CFG.url||!CFG.anonKey||/YOUR-/.test(CFG.url+CFG.anonKey)||!window.supabase){renderCur();return}
-SB=window.supabase.createClient(CFG.url,CFG.anonKey);
+let base;try{base=new URL(String(CFG.url).trim()).origin}catch(e){DBNOTE='The url in config.js is not a valid web address.';renderCur();return}
+SB=window.supabase.createClient(base,String(CFG.anonKey).trim());
 SB.auth.onAuthStateChange((ev,sess)=>{SESS=sess;setTimeout(checkEditor,0)});
 await loadCatalog();
 try{const {data}=await SB.auth.getSession();if(data&&data.session&&!SESS){SESS=data.session;await checkEditor()}}catch(e){}}
